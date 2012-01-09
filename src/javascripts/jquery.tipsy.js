@@ -16,6 +16,48 @@
         this.fixTitle();
     };
     
+    // taken from http://www.greywyvern.com/?post=331
+    function findPos(obj) {
+        var curleft = curtop = 0, scr = obj, fixed = false;
+        while ((scr = scr.parentNode) && scr != document.body) {
+            curleft -= scr.scrollLeft || 0;
+            curtop -= scr.scrollTop || 0;
+            if (getStyle(scr, "position") == "fixed") fixed = true;
+        }
+        if (fixed && !window.opera) {
+            var scrDist = scrollDist();
+            curleft += scrDist[0];
+            curtop += scrDist[1];
+        }
+        do {
+            curleft += obj.offsetLeft;
+            curtop += obj.offsetTop;
+        } while (obj = obj.offsetParent);
+        return {left:curleft, top:curtop};
+    }
+    
+    function scrollDist() {
+        var html = document.getElementsByTagName('html')[0];
+        if (html.scrollTop && document.documentElement.scrollTop) {
+            return [html.scrollLeft, html.scrollTop];
+        } else if (html.scrollTop || document.documentElement.scrollTop) {
+            return [
+                html.scrollLeft + document.documentElement.scrollLeft,
+                html.scrollTop + document.documentElement.scrollTop
+            ];
+        } else if (document.body.scrollTop)
+            return [document.body.scrollLeft, document.body.scrollTop];
+        return [0, 0];
+    }
+    
+    function getStyle(obj, styleProp) {
+        if (obj.currentStyle) {
+            var y = obj.currentStyle[styleProp];
+        } else if (window.getComputedStyle)
+            var y = window.getComputedStyle(obj, null)[styleProp];
+        return y;
+    }    
+    
     Tipsy.prototype = {
         show: function() {
             var title = this.getTitle();
@@ -26,10 +68,10 @@
                 $tip[0].className = 'tipsy'; // reset classname in case of dynamic gravity
                 $tip.remove().css({top: 0, left: 0, visibility: 'hidden', display: 'block'}).prependTo(document.body);
                 
-                var pos = $.extend({}, this.$element.offset(), {
+                var pos = $.extend({}, findPos(this.$element[0]), {
                     width: this.$element[0].offsetWidth,
                     height: this.$element[0].offsetHeight
-                });
+                });                
                 
                 var actualWidth = $tip[0].offsetWidth,
                     actualHeight = $tip[0].offsetHeight,
