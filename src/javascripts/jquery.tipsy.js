@@ -145,6 +145,7 @@
         
         tip: function() {
             if (!this.$tip) {
+            	$(".tipsy").remove();
                 this.$tip = $('<div class="tipsy"></div>').html('<div class="tipsy-arrow"></div><div class="tipsy-inner"></div>');
             }
             return this.$tip;
